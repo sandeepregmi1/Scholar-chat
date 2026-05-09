@@ -1,0 +1,99 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.so
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# IDEs
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+
+# =========================
+# Database
+# =========================
+*.sqlite3
+*.db
+
+# PostgreSQL dumps
+*.dump
+*.sql
+
+# =========================
+# Migrations (Alembic)
+# =========================
+alembic/versions/*.pyc
+
+# =========================
+# Celery / Redis
+# =========================
+celerybeat-schedule
+celerybeat.pid
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Test / Coverage
+# =========================
+htmlcov/
+.coverage
+.pytest_cache/
+.tox/
+
+# =========================
+# Jupyter Notebook
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# Build / packaging
+# =========================
+dist/
+build/
+*.egg-info/
+
+# =========================
+# Node (if frontend later added)
+# =========================
+node_modules/
+
+# =========================
+# Docker
+# =========================
+docker/*.env
+
+# =========================
+# AI / embeddings cache
+# =========================
+*.faiss
+*.chroma
+*.pkl
