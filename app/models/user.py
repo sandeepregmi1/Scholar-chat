@@ -1,7 +1,11 @@
+# app/models/user.py
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.sql import func
 
 from app.db.base import Base
+
+from sqlalchemy.orm import relationship
+
 
 
 class User(Base):
@@ -27,5 +31,7 @@ class User(Base):
     updated_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),
-        onupdate=func.now()
+        onupdate=func.now()   
     )
+
+    documents = relationship("Document", backref="owner")
