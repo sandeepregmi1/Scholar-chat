@@ -12,7 +12,7 @@ class Document(Base):
     filename = Column(String, nullable=False)
     file_path = Column(String, nullable=False)
 
-    upload_status = Column(String, default="uploaded")
+    upload_status = Column(String, nullable=False, default="uploaded")
     # uploaded | processing | ready | failed
 
     owner_id = Column(Integer, ForeignKey("users.id"))
