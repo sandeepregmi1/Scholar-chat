@@ -27,6 +27,12 @@ router = APIRouter(
 )
 
 
+from app.services.document_processor import ( extract_text_from_pdf,extract_text_from_docx, 
+                                             extract_text_with_ocr,  clean_extracted_text )
+
+
+
+
 # FILE VALIDATION SETTINGS
 
 ALLOWED_EXTENSIONS = [".pdf", ".docx", ".txt"]
@@ -87,10 +93,50 @@ async def upload_document(
     with open(file_path, "wb") as buffer:
         buffer.write(content)
 
-    
-        
-  
+                    
+        # =========================
+        # EXTRACT DOCUMENT TEXT (pdf and docx) and use decoded content for txt 
+        # txt already read as content and decoded to utf-8, so no need to extract text from it, just use the decoded content
+        # =========================
 
+        extracted_text = ""
+
+        # PDF Extraction
+        if ext == ".pdf":
+
+            extracted_text = extract_text_from_pdf(file_path)
+
+            # If no text extracted, try OCR (for scanned PDFs)            
+            if not extracted_text.strip():
+                extracted_text = extract_text_with_ocr(file_path)
+
+
+        # DOCX Extraction
+        elif ext == ".docx":
+
+            extracted_text = extract_text_from_docx(file_path)
+
+        # TXT Extraction
+        elif ext == ".txt":
+
+            extracted_text = content.decode("utf-8")
+
+
+        print("\n========== EXTRACTED TEXT ==========\n")
+
+        print(extracted_text[:1000]) # print first 1000 characters of extracted text 
+
+
+        # =========================
+        # CLEAN TEXT
+        # =========================
+
+        cleaned_text = clean_extracted_text(extracted_text)
+
+        print("\n========== CLEANED TEXT ==========\n")
+
+        print(cleaned_text[:1000])  # print first 1000 characters of cleaned text 
+        
 
     # =========================
     # CREATE DATABASE ENTRY
