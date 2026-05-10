@@ -8,11 +8,13 @@ from docx import Document # python-docx library for DOCX processing
 # For OCR processing (if needed  for scanned PDFs)
 import pytesseract
 # from PIL import Image
-import os
+
 from pdf2image import convert_from_path
 
 # Regular expression for cleaning extracted text
 import re
+
+import os
 
 
 # =========================
@@ -103,3 +105,39 @@ def clean_extracted_text(text: str) -> str:
     text = text.strip()
 
     return text
+
+# =========================
+# PDF METADATA EXTRACTION
+# =========================
+
+def extract_pdf_metadata(file_path: str) -> dict:
+
+    pdf_document = fitz.open(file_path)
+
+    metadata = pdf_document.metadata
+
+    data = {
+        "pages": len(pdf_document),
+        "title": metadata.get("title"),
+        "author": metadata.get("author")
+    }
+
+    pdf_document.close()
+
+    return data
+
+# =========================
+# DOCX METADATA EXTRACTION
+# =========================
+
+def extract_docx_metadata(file_path: str) -> dict:
+
+    document = Document(file_path)
+
+    properties = document.core_properties
+
+    return {
+        "pages": None,
+        "title": properties.title,
+        "author": properties.author
+    }

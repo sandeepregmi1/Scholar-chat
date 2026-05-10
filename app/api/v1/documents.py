@@ -28,7 +28,8 @@ router = APIRouter(
 
 
 from app.services.document_processor import ( extract_text_from_pdf,extract_text_from_docx, 
-                                             extract_text_with_ocr,  clean_extracted_text )
+                                             extract_text_with_ocr,  clean_extracted_text,
+                                             extract_pdf_metadata,extract_docx_metadata) 
 
 
 
@@ -127,6 +128,21 @@ async def upload_document(
         print(extracted_text[:1000]) # print first 1000 characters of extracted text 
 
 
+        metadata = {
+            "pages": None,
+            "title": None,
+            "author": None
+        }
+
+        if ext == ".pdf":
+
+            metadata = extract_pdf_metadata(file_path)
+
+        elif ext == ".docx":
+
+            metadata = extract_docx_metadata(file_path)
+
+
         # =========================
         # CLEAN TEXT
         # =========================
@@ -136,7 +152,7 @@ async def upload_document(
         print("\n========== CLEANED TEXT ==========\n")
 
         print(cleaned_text[:1000])  # print first 1000 characters of cleaned text 
-        
+
 
     # =========================
     # CREATE DATABASE ENTRY
@@ -146,7 +162,13 @@ async def upload_document(
         filename=file.filename,
         file_path=file_path,
         upload_status=UPLOAD_STATUS_UPLOADED,
-        owner_id=current_user.id
+        owner_id=current_user.id,
+
+        # metadata fields
+        pages=metadata["pages"],
+        title=metadata["title"],
+        author=metadata["author"],
+        file_size=len(content)
     )
 
     db.add(new_document)
