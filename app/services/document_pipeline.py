@@ -1,5 +1,3 @@
-# /home/sandeep/Projects/ScholarChat /app/services/document_pipeline.py
-
 # app/services/document_pipeline.py
 
 from app.services.document_processor import (
@@ -11,11 +9,7 @@ from app.services.document_processor import (
     extract_docx_metadata
 )
 
-from app.services.embedding_service import generate_embedding
-from app.services.chunking_service import chunk_text
 from app.services.vector_store import VectorStore
-
-
 
 
 class DocumentPipeline:
@@ -25,50 +19,43 @@ class DocumentPipeline:
 
     def run(self, file_path, document, ext, content):
 
-        # 1. Extract
+        # 1. Extract text
         extracted_text = self.extract(file_path, ext, content)
 
-        # 2. Metadata
+        # 2. Extract metadata
         metadata = self.get_metadata(file_path, ext)
 
-        # 3. Clean
+        # 3. Clean text
         cleaned_text = clean_extracted_text(extracted_text)
-        print(f"cleaned:  ",cleaned_text)
 
+        print("cleaned text:", cleaned_text)
 
-
-        # 4. Chunk
-        chunks = chunk_text(cleaned_text)
-        print(f"chunks: ",chunks)
-
-        # 5. Embeddings
-        embeddings = [
-            generate_embedding(chunk) for chunk in chunks
-        ]
-        print(f"embeddings: ",embeddings)
-
-        # 6. Store in vector DB
+        # 4. Process + Store vectors
         vector_store = VectorStore(self.db)
-        print(f"vec_store : ",vector_store)
 
-        vector_store.store(
+        stored_chunks = vector_store.process_and_store(
             document_id=document.id,
-            chunks=chunks,
-            embeddings=embeddings
+            text=cleaned_text
         )
+
+        print("stored chunks:", stored_chunks)
 
         return {
             "text": cleaned_text,
             "metadata": metadata,
-            "chunks": len(chunks),
-            "embeddings": len(embeddings)
+            "chunks": stored_chunks
         }
 
     def extract(self, file_path, ext, content):
+
         if ext == ".pdf":
+
             text = extract_text_from_pdf(file_path)
+
+            # fallback OCR
             if not text.strip():
                 text = extract_text_with_ocr(file_path)
+
             return text
 
         if ext == ".docx":
@@ -80,10 +67,15 @@ class DocumentPipeline:
         return ""
 
     def get_metadata(self, file_path, ext):
+
         if ext == ".pdf":
             return extract_pdf_metadata(file_path)
 
         if ext == ".docx":
             return extract_docx_metadata(file_path)
 
-        return {"pages": None, "title": None, "author": None}
+        return {
+            "pages": None,
+            "title": None,
+            "author": None
+        }
