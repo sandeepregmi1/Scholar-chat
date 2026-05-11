@@ -1,5 +1,4 @@
-# app/api/v1/documents.py
-
+# /home/sandeep/Projects/ScholarChat /app/api/v1/documents.py
 import os
 import uuid
 
@@ -20,6 +19,8 @@ from app.schemas.document import DocumentResponse
 from app.core.deps import get_current_user
 from app.models.user import User
 
+from app.services.document_pipeline import DocumentPipeline
+
 
 router = APIRouter(
     prefix="/documents",
@@ -27,17 +28,11 @@ router = APIRouter(
 )
 
 
-from app.services.document_processor import ( extract_text_from_pdf,extract_text_from_docx, 
-                                             extract_text_with_ocr,  clean_extracted_text,
-                                             extract_pdf_metadata,extract_docx_metadata) 
-
-
-
-
-# FILE VALIDATION SETTINGS
+# =========================
+# SETTINGS
+# =========================
 
 ALLOWED_EXTENSIONS = [".pdf", ".docx", ".txt"]
-
 MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
 
 UPLOAD_STATUS_UPLOADED = "uploaded"
@@ -46,7 +41,9 @@ UPLOAD_STATUS_READY = "ready"
 UPLOAD_STATUS_FAILED = "failed"
 
 
-# FILE UPLOAD ENDPOINT
+# =========================
+# UPLOAD ENDPOINT
+# =========================
 
 @router.post("/upload", response_model=DocumentResponse)
 async def upload_document(
@@ -55,8 +52,9 @@ async def upload_document(
     current_user: User = Depends(get_current_user)
 ):
 
-    # VALIDATE FILE EXTENSION
-
+    # -------------------------
+    # VALIDATE EXTENSION
+    # -------------------------
     ext = os.path.splitext(file.filename)[1].lower()
 
     if ext not in ALLOWED_EXTENSIONS:
@@ -65,11 +63,10 @@ async def upload_document(
             detail="Only PDF, DOCX, and TXT files are allowed"
         )
 
-    # READ FILE CONTENT
-
+    # -------------------------
+    # READ FILE
+    # -------------------------
     content = await file.read()
-
-    # VALIDATE FILE SIZE
 
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(
@@ -77,149 +74,80 @@ async def upload_document(
             detail="File too large (max 20MB)"
         )
 
-    # CREATE UPLOAD DIRECTORY
-
+    # -------------------------
+    # SAVE FILE LOCALLY
+    # -------------------------
     upload_dir = "uploads"
-
     os.makedirs(upload_dir, exist_ok=True)
 
-    # GENERATE UNIQUE FILENAME
-
     unique_filename = f"{uuid.uuid4()}{ext}"
-
     file_path = os.path.join(upload_dir, unique_filename)
-
-    # SAVE FILE LOCALLY
 
     with open(file_path, "wb") as buffer:
         buffer.write(content)
 
-                    
-        # =========================
-        # EXTRACT DOCUMENT TEXT (pdf and docx) and use decoded content for txt 
-        # txt already read as content and decoded to utf-8, so no need to extract text from it, just use the decoded content
-        # =========================
-
-        extracted_text = ""
-
-        # PDF Extraction
-        if ext == ".pdf":
-
-            extracted_text = extract_text_from_pdf(file_path)
-
-            # If no text extracted, try OCR (for scanned PDFs)            
-            if not extracted_text.strip():
-                extracted_text = extract_text_with_ocr(file_path)
-
-
-        # DOCX Extraction
-        elif ext == ".docx":
-
-            extracted_text = extract_text_from_docx(file_path)
-
-        # TXT Extraction
-        elif ext == ".txt":
-
-            extracted_text = content.decode("utf-8")
-
-
-        print("\n========== EXTRACTED TEXT ==========\n")
-
-        print(extracted_text[:1000]) # print first 1000 characters of extracted text 
-
-
-        metadata = {
-            "pages": None,
-            "title": None,
-            "author": None
-        }
-
-        if ext == ".pdf":
-
-            metadata = extract_pdf_metadata(file_path)
-
-        elif ext == ".docx":
-
-            metadata = extract_docx_metadata(file_path)
-
-
-        # =========================
-        # CLEAN TEXT
-        # =========================
-
-        cleaned_text = clean_extracted_text(extracted_text)
-
-        print("\n========== CLEANED TEXT ==========\n")
-
-        print(cleaned_text[:1000])  # print first 1000 characters of cleaned text 
-
-
-    # =========================
-    # CREATE DATABASE ENTRY
-    # =========================
-
-    new_document = Document(
+    # -------------------------
+    # CREATE DB ENTRY (uploaded)
+    # -------------------------
+    document = Document(
         filename=file.filename,
         file_path=file_path,
         upload_status=UPLOAD_STATUS_UPLOADED,
         owner_id=current_user.id,
-
-        # metadata fields
-        pages=metadata["pages"],
-        title=metadata["title"],
-        author=metadata["author"],
         file_size=len(content)
     )
 
-    db.add(new_document)
+    db.add(document)
     db.commit()
-    db.refresh(new_document)
-
+    db.refresh(document)
 
     # =========================
-    # PROCESS DOCUMENT
+    # PROCESS PIPELINE
     # =========================
-
     try:
-
-        # uploaded → processing
-        new_document.upload_status = UPLOAD_STATUS_PROCESSING
-
+        # update status → processing
+        document.upload_status = UPLOAD_STATUS_PROCESSING
         db.commit()
-        db.refresh(new_document)
 
-        # ==================================
-        # FUTURE AI PROCESSING GOES HERE
-        # ==================================
+        pipeline = DocumentPipeline(db)
 
-        # Example:
-        # - extract text
+        result = pipeline.run(
+            file_path=file_path,
+            document=document,
+            ext=ext,
+            content=content
+        )
+
+        cleaned_text = result["text"]
+        metadata = result["metadata"]
+
+        # -------------------------
+        # (FOR PHASE 5 READY HOOK)
+        # -------------------------
+        # At this point you will plug:
+        # - chunking
         # - embeddings
-        # - vector DB
+        # - vector DB storage
 
-        # processing success
-        new_document.upload_status = UPLOAD_STATUS_READY
-
+        # mark ready
+        document.upload_status = UPLOAD_STATUS_READY
         db.commit()
-        db.refresh(new_document)
 
-    except Exception:
-
-        # processing failed
-        new_document.upload_status = UPLOAD_STATUS_FAILED
-
+    except Exception as e:
+        document.upload_status = UPLOAD_STATUS_FAILED
         db.commit()
-        db.refresh(new_document)
 
         raise HTTPException(
             status_code=500,
-            detail="Document processing failed"
+            detail=f"Document processing failed: {str(e)}"
         )
- 
-    return new_document 
 
-# GET MY DOCUMENTS
+    return document
 
+
+# =========================
+# GET USER DOCUMENTS
+# =========================
 
 @router.get("/my", response_model=list[DocumentResponse])
 def get_my_documents(
@@ -231,14 +159,4 @@ def get_my_documents(
         Document.owner_id == current_user.id
     ).all()
 
-    return [
-        {
-            "id": d.id,
-            "filename": d.filename,
-            "file_path": d.file_path,
-            "upload_status": d.upload_status,
-            "owner_id": d.owner_id,
-            "created_at": d.created_at
-        }
-        for d in docs
-    ]
+    return docs
