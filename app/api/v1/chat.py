@@ -1,5 +1,6 @@
 #  /home/sandeep/Projects/ScholarChat /app/api/v1/chat.py
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -20,38 +21,25 @@ def ask_question(
     db: Session = Depends(get_db)
 ):
 
-    try:
-        # Services
-        searcher = VectorSearch(db)
-        prompt_builder = PromptService()
-        llm = LLMService()
+    searcher = VectorSearch(db)
+    prompt_builder = PromptService()
+    llm = LLMService()
 
-        # 1. Retrieve relevant chunks (RAG step 1)
-        chunks = searcher.search(
-            query=question,
-            document_id=document_id,
-            top_k=3
-        )
+    # 1. Retrieve chunks
+    chunks = searcher.search(
+        query=question,
+        document_id=document_id,
+        top_k=3
+    )
 
-        # 2. Build prompt (RAG step 2)
-        prompt = prompt_builder.build_prompt(
-            question=question,
-            chunks=chunks
-        )
+    # 2. Build prompt
+    prompt = prompt_builder.build_prompt(
+        question=question,
+        chunks=chunks
+    )
 
-        # 3. Generate answer (RAG step 3)
-        answer = llm.generate(prompt)
-
-        # 4. Clean response (avoid leaking prompt in production later)
-        return {
-            "question": question,
-            "retrieved_chunks": chunks,
-            "answer": answer
-            
-        }
-
-    except Exception as e:
-        return {
-            "error": str(e),
-            "message": "Chat request failed"
-        }
+    # 3. Stream response
+    return StreamingResponse(
+        llm.generate_stream(prompt),
+        media_type="text/plain"
+    )
