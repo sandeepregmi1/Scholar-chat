@@ -3,36 +3,35 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.services.vector_search import VectorSearch
-from app.services.notes_service import NotesService
+from app.services.flashcard_service import FlashcardService
 
 router = APIRouter(
-    prefix="/notes",
-    tags=["Notes"]
+    prefix="/flashcards",
+    tags=["Flashcards"]
 )
 
 
 @router.post("/generate")
-def generate_notes(
+def generate_flashcards(
     topic: str,
     document_id: int = None,
     db: Session = Depends(get_db)
 ):
-
     searcher = VectorSearch(db)
-    notes_service = NotesService()
+    flashcard_service = FlashcardService()
 
     chunks = searcher.search(
         query=topic,
         document_id=document_id,
-        top_k=5
+        top_k=3
     )
 
-    notes = notes_service.generate_notes(
+    flashcards = flashcard_service.generate_flashcards(
         topic=topic,
         chunks=chunks
     )
 
     return {
         "topic": topic,
-        "notes": notes
+        "flashcards": flashcards
     }

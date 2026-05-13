@@ -15,6 +15,15 @@ from app.api.v1.chat import router as chat_router
 
 from app.api.v1 import ws_chat
 
+from app.api.v1 import notes
+
+from app.api.v1.flashcards import router as flashcards_router
+
+from app.api.v1.quiz import router as quiz_router
+
+
+
+
 app = FastAPI(title="ScholarChat API")
 
 app.include_router(auth_router)
@@ -24,6 +33,14 @@ app.include_router(documents_router)
 app.include_router(chat_router)
 
 app.include_router(ws_chat.router)
+
+
+app.include_router(notes.router)
+
+app.include_router(flashcards_router)
+
+
+app.include_router(quiz_router)
 
 
 

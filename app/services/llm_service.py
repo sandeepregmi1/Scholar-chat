@@ -9,6 +9,25 @@ class LLMService:
     def __init__(self, model="phi3"):
         self.model = model
 
+
+    def generate(self, prompt: str):
+        """
+        Normal response (non-streaming)
+        """
+
+        response = requests.post(
+                "http://localhost:11434/api/generate",
+                json={
+                    "model": self.model,
+                    "prompt": prompt,
+                    "stream": False
+                }
+        )
+
+        return response.json()["response"]   
+
+
+
     def generate_stream(self, prompt: str):
         """
         Stream response from Ollama token by token
