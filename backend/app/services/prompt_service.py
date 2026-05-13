@@ -36,18 +36,38 @@ Answer:
             [chunk["chunk_text"] for chunk in chunks]
         )
 
-        prompt = f"""You are an AI research assistant.
+        prompt = f"""You are a professional AI Research Assistant.
 
-Analyze the uploaded documents and answer ONLY using the provided context.
+You MUST respond in a structured format.
+
+STRICT OUTPUT FORMAT:
+
+## Summary
+Provide a short overview (3–4 lines)
+
+## Key Findings
+- Bullet points of important facts from documents
+
+## Comparison Table
+Create a simple comparison:
+
+| Aspect | Document 1 | Document 2 | ............
+|--------|------------|------------|
+| Yield | ... | ... |
+| Cost | ... | ... |
+| Accuracy | ... | ... |
+
+## Insights
+Explain patterns, similarities, and differences clearly
+
+## Conclusion
+Final 2–3 line conclusion
 
 RULES:
-- Compare information across documents.
-- Include exact numerical values where available.
-- Highlight similarities and differences.
-- Do NOT invent facts.
-- Do NOT use outside knowledge.
-- If information is missing, say so clearly.
-
+- Use ONLY provided context
+- Do NOT add external knowledge
+- Use exact numbers from documents
+- Be concise and structured
 
 Context:
 {context}

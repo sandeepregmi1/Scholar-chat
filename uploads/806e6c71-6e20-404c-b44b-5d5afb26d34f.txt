@@ -1,0 +1,5 @@
+AI-Based Greenhouse Farming System
+
+In a commercial greenhouse project in Nepal, an AI-powered smart farming solution was introduced across 850 hectares of vegetable farms. The system combined IoT sensors, drone imaging, and machine learning models to monitor temperature, humidity, and plant growth. It achieved 89% accuracy in detecting nutrient deficiencies. After deployment, pesticide use decreased by 24%, and irrigation efficiency improved by 31%. Tomato production increased from 5.1 tons per hectare to 6.8 tons per hectare over two harvesting cycles.
+
+The AI platform also used weather forecasting and disease prediction to identify fungal infections with 84% accuracy. Farmers received alerts 4–6 days in advance, reducing crop damage from 15% to 5%. Labor dependency decreased by 27% because many monitoring tasks became automated. Overall farm revenue increased by 36%, while maintenance and input costs were reduced by 19%. This case showed how AI can optimize greenhouse farming through predictive analytics and automated environmental control.
