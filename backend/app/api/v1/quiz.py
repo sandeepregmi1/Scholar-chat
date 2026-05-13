@@ -1,3 +1,5 @@
+# /app/api/v1/quiz.py
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -21,9 +23,12 @@ def generate_quiz(
     searcher = VectorSearch(db)
     quiz_service = QuizService()
 
+    # ✅ FIX: convert single ID → list
+    document_ids = [document_id] if document_id else None
+
     chunks = searcher.search(
         query=topic,
-        document_id=document_id,
+        document_ids=document_ids,
         top_k=3
     )
 

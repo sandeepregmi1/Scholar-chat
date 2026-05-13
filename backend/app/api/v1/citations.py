@@ -1,3 +1,5 @@
+# /app/api/v1/citations.py
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -22,9 +24,12 @@ def ask_with_citations(
     prompt_builder = PromptService()
     llm = LLMService()
 
+    # ✅ FIX: consistent vector search input
+    document_ids = [document_id] if document_id else None
+
     chunks = searcher.search(
         query=question,
-        document_id=document_id,
+        document_ids=document_ids,
         top_k=3
     )
 
@@ -35,11 +40,12 @@ def ask_with_citations(
 
     answer = llm.generate(prompt)
 
+    # ✅ safe mapping (chunks already structured from VectorSearch)
     citations = [
         {
-            "document_id": c["document_id"],
-            "page_number": c["page_number"],
-            "score": c["score"]
+            "document_id": c.get("document_id"),
+            "page_number": c.get("page_number"),
+            "score": c.get("score")
         }
         for c in chunks
     ]

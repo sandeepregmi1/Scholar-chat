@@ -1,3 +1,5 @@
+# /app/api/v1/flashcards.py
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -20,9 +22,12 @@ def generate_flashcards(
     searcher = VectorSearch(db)
     flashcard_service = FlashcardService()
 
+    # ✅ FIX: convert to list format
+    document_ids = [document_id] if document_id else None
+
     chunks = searcher.search(
         query=topic,
-        document_id=document_id,
+        document_ids=document_ids,
         top_k=3
     )
 

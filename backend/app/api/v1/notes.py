@@ -1,3 +1,5 @@
+# /app/api/v1/notes.py
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -21,9 +23,12 @@ def generate_notes(
     searcher = VectorSearch(db)
     notes_service = NotesService()
 
+    # ✅ FIX: convert single id → list
+    document_ids = [document_id] if document_id else None
+
     chunks = searcher.search(
         query=topic,
-        document_id=document_id,
+        document_ids=document_ids,
         top_k=5
     )
 

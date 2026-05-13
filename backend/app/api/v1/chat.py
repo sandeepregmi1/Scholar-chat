@@ -1,4 +1,7 @@
 #  /home/sandeep/Projects/ScholarChat /app/api/v1/chat.py
+
+# /app/api/v1/chat.py
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -25,10 +28,12 @@ def ask_question(
     prompt_builder = PromptService()
     llm = LLMService()
 
-    # 1. Retrieve chunks
+    # 1. FIX: use document_ids (NOT document_id)
+    document_ids = [document_id] if document_id else None
+
     chunks = searcher.search(
         query=question,
-        document_id=document_id,
+        document_ids=document_ids,
         top_k=3
     )
 
