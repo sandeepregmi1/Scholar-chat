@@ -121,6 +121,8 @@ async def upload_document(
         cleaned_text = result["text"]
         metadata = result["metadata"]
 
+        document.content = cleaned_text[:5000]
+
         # -------------------------
         # (FOR PHASE 5 READY HOOK)
         # -------------------------

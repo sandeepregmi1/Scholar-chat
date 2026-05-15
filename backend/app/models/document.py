@@ -28,3 +28,7 @@ class Document(Base):
     author = Column(String, nullable=True)
 
     file_size = Column(Integer, nullable=True)
+
+    content = Column(String, nullable=True)
+
+    

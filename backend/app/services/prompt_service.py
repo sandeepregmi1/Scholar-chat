@@ -2,23 +2,41 @@
 
 class PromptService:
 
-    def build_prompt(self, question: str, chunks: list):
 
+    def build_prompt(
+        self,
+        question: str,
+        chunks: list,
+        history: list = None
+    ):
+        # document context
         context = "\n\n".join(
             [chunk["chunk_text"] for chunk in chunks]
         )
 
-        prompt = f"""
-You are an AI assistant for answering questions from uploaded documents.
+        # previous conversation
+        conversation = ""
 
-Use ONLY the provided context.
+        if history:
+            conversation = "\n".join(
+                [f"{msg.role}: {msg.content}" for msg in history]
+            )
+
+        prompt = f"""
+You are ScholarChat, an AI assistant for answering questions from uploaded documents.
+
+Use ONLY the provided document context.
 
 RULES:
 - Use ONLY the provided context.
+- Use previous conversation for follow-up understanding.
 - Do NOT add external knowledge.
 - Do NOT create citations, sources, or references.
 - If answer is not in context, say:
   "I could not find the answer in the uploaded document."
+
+Previous conversation:
+{conversation}
 
 Context:
 {context}

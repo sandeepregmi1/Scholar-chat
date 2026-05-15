@@ -23,7 +23,6 @@ def generate_quiz(
     searcher = VectorSearch(db)
     quiz_service = QuizService()
 
-    # ✅ FIX: convert single ID → list
     document_ids = [document_id] if document_id else None
 
     chunks = searcher.search(

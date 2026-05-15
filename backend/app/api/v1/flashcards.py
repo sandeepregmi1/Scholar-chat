@@ -22,7 +22,6 @@ def generate_flashcards(
     searcher = VectorSearch(db)
     flashcard_service = FlashcardService()
 
-    # ✅ FIX: convert to list format
     document_ids = [document_id] if document_id else None
 
     chunks = searcher.search(

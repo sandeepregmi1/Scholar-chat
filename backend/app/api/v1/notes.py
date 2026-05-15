@@ -23,7 +23,6 @@ def generate_notes(
     searcher = VectorSearch(db)
     notes_service = NotesService()
 
-    # ✅ FIX: convert single id → list
     document_ids = [document_id] if document_id else None
 
     chunks = searcher.search(

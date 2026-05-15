@@ -24,7 +24,6 @@ def ask_with_citations(
     prompt_builder = PromptService()
     llm = LLMService()
 
-    # ✅ FIX: consistent vector search input
     document_ids = [document_id] if document_id else None
 
     chunks = searcher.search(
@@ -40,7 +39,6 @@ def ask_with_citations(
 
     answer = llm.generate(prompt)
 
-    # ✅ safe mapping (chunks already structured from VectorSearch)
     citations = [
         {
             "document_id": c.get("document_id"),

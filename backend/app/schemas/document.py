@@ -1,3 +1,4 @@
+# /home/sandeep/Projects/ScholarChat/backend/app/schemas/document.py
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
@@ -10,6 +11,8 @@ class DocumentResponse(BaseModel):
     file_path: str
     upload_status: str
     owner_id: int
+
+    content: Optional[str] = None
 
     pages: Optional[int] = None
 
