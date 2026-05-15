@@ -1,3 +1,4 @@
+// /src/pages/Register.tsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../api/client";
@@ -8,9 +9,11 @@ export default function Register() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       await API.post("/auth/register", {
@@ -19,48 +22,73 @@ export default function Register() {
         password,
       });
 
-      alert("Registration successful");
+      alert("Registration successful! You can now log in.");
       navigate("/");
     } catch (error) {
       console.error(error);
-      alert("Registration failed");
+      alert("Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: "40px" }}>
-      <h1>Register</h1>
+    <div className="auth-container">
+      <div className="auth-card">
+        <div className="auth-header">
+          <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📘</div>
+          <h1>Create Account</h1>
+          <p style={{ color: "var(--text-muted)" }}>Join ScholarChat and start learning with AI</p>
+        </div>
 
-      <form onSubmit={handleRegister}>
-        <input
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <br /><br />
+        <form onSubmit={handleRegister} className="auth-form">
+          <div className="form-group">
+            <label htmlFor="username">Full Name</label>
+            <input
+              id="username"
+              type="text"
+              placeholder="John Doe"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <br /><br />
+          <div className="form-group">
+            <label htmlFor="email">Email Address</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="name@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <br /><br />
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-        <button type="submit">Register</button>
-      </form>
+          <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: "1rem" }}>
+            {loading ? "Creating account..." : "Register"}
+          </button>
+        </form>
 
-      <p>
-        Already have account? <Link to="/">Login</Link>
-      </p>
+        <div className="auth-footer">
+          <p>
+            Already have an account? <Link to="/" style={{ fontWeight: "600" }}>Sign in</Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
