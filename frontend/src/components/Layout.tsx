@@ -43,7 +43,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         <div className="sidebar-footer">
           <p>ScholarChat v1.0</p>
-          <p>© 2024 AI Learning Platform</p>
+          <p>© 2026 AI Learning Platform</p>
         </div>
       </aside>
 
