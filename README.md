@@ -135,10 +135,3 @@ The backend exposes several key RESTful endpoints (documented automatically via 
 - **`/notes`, `/flashcards`, `/quiz`**: Study material generation and management.
 - **`/citations`**: Retrieve generated citations for responses.
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the MIT License.
